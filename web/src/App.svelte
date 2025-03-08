@@ -1,4 +1,5 @@
 <script lang="ts">
+    import "bulma/css/bulma.min.css";
     import { onDestroy, onMount } from "svelte";
 
     let removeBlackbar: any;
@@ -6,12 +7,16 @@
     let resultImage: any = $state("");
 
     onMount(async () => {
-        const module = await import ('../pkg/blackbar_remover.js')
-        await module.default('../pkg/blackbar_remover_bg.wasm')
-        removeBlackbar = module.remove_black_bar
-    })
+        const module = await import("../pkg/blackbar_remover.js");
+        await module.default("../pkg/blackbar_remover_bg.wasm");
+        removeBlackbar = module.remove_black_bar;
+    });
 
     function handleImageUpload() {
+        if (resultImage) {
+            URL.revokeObjectURL(resultImage);
+        }
+
         const image = inputImage.files[0];
         if (image) {
             const reader = new FileReader();
@@ -30,23 +35,62 @@
             reader.onload = async (e) => {
                 const data = new Uint8Array(e.target.result);
                 const output = removeBlackbar(data);
-                const blob = new Blob([output], { type: 'image/png' });
+                const blob = new Blob([output], { type: "image/png" });
                 resultImage = URL.createObjectURL(blob);
-            }
+            };
         }
     }
 
     onDestroy(() => {
-    if (resultImage) {
-      URL.revokeObjectURL(resultImage);
-    }
-  });
+        if (resultImage) {
+            URL.revokeObjectURL(resultImage);
+        }
+    });
 </script>
 
 <main>
-  <h1>Blackbar Remover</h1>
-  <p>* Baru bisa ngapus bar hitam kiri-kanan, atas-bawah masih dalam roadmap</p>
-  <img width="640" src={resultImage} alt="Result" style="padding-bottom: 20px;" /><br />
-  <input type="file" accept="image/*" onchange={handleImageUpload} bind:this={inputImage} style="padding-bottom: 20px;" />
-  <button onclick={handleRemoveBlackbar}>Remove Blackbar</button><br />
+    <div class="container columns has-text-centered">
+        <div class="column">
+            <section class="hero">
+                <div class="hero-body">
+                    <p class="title">Blackbar Remover</p>
+                    <p class="subtitle">
+                        {'{{'} remove blackbar from your screenshots }}
+                    </p>
+                </div>
+            </section>
+            {#if resultImage}
+                <div class="block">
+                    <img
+                        style="max-height: 500px;"
+                        src={resultImage}
+                        alt="Result"
+                    /><br />
+                </div>
+                <div class="block">
+                    <button
+                        class="button is-primary is-outlined"
+                        onclick={handleRemoveBlackbar}>Remove Blackbar</button
+                    >
+                </div>
+            {/if}
+            <div class="file is-boxed is-centered">
+                <label class="file-label">
+                    <input
+                        class="file-input"
+                        type="file"
+                        accept="image/*"
+                        onchange={handleImageUpload}
+                        bind:this={inputImage}
+                    />
+                    <span class="file-cta">
+                        <span class="file-icon">
+                            <i class="fas fa-upload"></i>
+                        </span>
+                        <span class="file-label"> Choose a file… </span>
+                    </span>
+                </label>
+            </div>
+        </div>
+    </div>
 </main>
