@@ -1,15 +1,12 @@
-use std::{env, error};
+use std::io::Cursor;
 
-fn main() -> Result<(), Box<dyn error::Error>> {
-    const THRESHOLD: u8 = 50;
+use wasm_bindgen::prelude::*;
 
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        println!("Usage: {} <input_file>", args[0]);
-        return Ok(());
-    }
+const THRESHOLD: u8 = 50;
 
-    let img = image::open(&args[1])?;
+#[wasm_bindgen]
+pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
+    let img = image::load_from_memory(&input).unwrap_or_else(|err| panic!("Failed to load image: {err:?}"));
     let img_rgb = img.to_rgb8();
 
     let mut start_point = (0, 0);
@@ -46,8 +43,8 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     }
 
-    new_img.save("output.png")?;
-    println!("Saved to output.png");
+    let mut output: Vec<u8> = Vec::new();
+    new_img.write_to(&mut Cursor::new(&mut output), image::ImageFormat::Png).unwrap();
 
-    Ok(())
+    output
 }

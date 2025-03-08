@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 image = "0.25.5"
+wasm-bindgen = "0.2.100"
+
+[lib]
+crate-type = ["cdylib"]
