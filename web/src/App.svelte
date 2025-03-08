@@ -15,6 +15,8 @@
     });
 
     function handleImageUpload() {
+        loading = false;
+
         if (resultImage) {
             URL.revokeObjectURL(resultImage);
         }
@@ -24,6 +26,7 @@
             const reader = new FileReader();
             reader.readAsDataURL(image);
             reader.onload = async (e) => {
+                if (!e.target) return;
                 resultImage = e.target.result;
                 filename = image.name;
             };
@@ -36,7 +39,11 @@
         if (image) {
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const data = new Uint8Array(e.target.result);
+                if (!e.target) {
+                    loading = false;
+                    return;
+                }
+                const data = new Uint8Array(e.target.result as ArrayBuffer);
                 const output = removeBlackbar(data);
                 const blob = new Blob([output], { type: "image/png" });
                 resultImage = URL.createObjectURL(blob);
@@ -60,19 +67,25 @@
         <div class="column">
             <div class="block" style="margin-top: 30px; margin-bottom: 30px;">
                 <p class="title">Blackbar Remover</p>
+                <p class="subtitle">Remove black bars from images</p>
             </div>
             {#if resultImage}
                 <div class="box block has-background-grey-darker">
-                    <img
-                        style="max-height: 500px;"
-                        src={resultImage}
-                        alt="Result"
-                    /><br />
+                    <button
+                        onclick={() => document.getElementById("image-input")?.click()}
+                    >
+                        <img
+                            style="max-height: 500px;"
+                            src={resultImage}
+                            alt="result"
+                        /><br />
+                    </button>
                 </div>
             {/if}
             <div class="file is-centered" class:has-name={filename}>
                 <label class="file-label">
                     <input
+                        id="image-input"
                         class="file-input"
                         type="file"
                         accept="image/*"
@@ -98,12 +111,13 @@
                         <p>Processing...</p>
                     </div>
                 {:else}
-                <div class="block">
-                    <button
-                        class="button is-medium is-primary is-outlined is-fullwidth"
-                        onclick={handleRemoveBlackbar}>Remove Blackbar</button
-                    >
-                </div>
+                    <div class="block">
+                        <button
+                            class="button is-medium is-primary is-outlined is-fullwidth"
+                            onclick={handleRemoveBlackbar}
+                            >Remove Blackbar</button
+                        >
+                    </div>
                 {/if}
             {/if}
         </div>
@@ -113,6 +127,11 @@
 <style>
     p.title {
         font-family: Calibri, sans-serif;
-        font-size: 45px;
+        font-size: 40px;
+    }
+
+    p.subtitle {
+        font-family: Calibri, sans-serif;
+        font-size: 18px;
     }
 </style>
