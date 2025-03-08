@@ -1,7 +1,7 @@
 use std::io::Cursor;
 use wasm_bindgen::prelude::*;
 
-const THRESHOLD: u8 = 25;
+const THRESHOLD: u8 = 30;
 
 #[wasm_bindgen]
 pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
@@ -23,6 +23,9 @@ pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
             break;
         }
     }
+    if top > 0 {
+        top = top + 1;
+    }
 
     let mut left = 0;
     for x in 0..width {
@@ -32,6 +35,9 @@ pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
         } else {
             break;
         }
+    }
+    if left > 0 {
+        left = left + 1;
     }
 
     let mut right = width-1;
