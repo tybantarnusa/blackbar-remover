@@ -54,27 +54,18 @@
             <section class="hero">
                 <div class="hero-body">
                     <p class="title">Blackbar Remover</p>
-                    <p class="subtitle">
-                        {'{{'} remove blackbar from your screenshots }}
-                    </p>
                 </div>
             </section>
             {#if resultImage}
-                <div class="block">
+                <div class="box block has-background-grey-darker">
                     <img
                         style="max-height: 500px;"
                         src={resultImage}
                         alt="Result"
                     /><br />
                 </div>
-                <div class="block">
-                    <button
-                        class="button is-primary is-outlined"
-                        onclick={handleRemoveBlackbar}>Remove Blackbar</button
-                    >
-                </div>
             {/if}
-            <div class="file is-boxed is-centered">
+            <div class="file has-name is-centered">
                 <label class="file-label">
                     <input
                         class="file-input"
@@ -87,10 +78,28 @@
                         <span class="file-icon">
                             <i class="fas fa-upload"></i>
                         </span>
-                        <span class="file-label"> Choose a file… </span>
+                        <span class="file-label"> Choose an image… </span>
+                    </span>
+                    <span class="file-name">
+                        Screen Shot 2017-07-29 at 15.54.25.png
                     </span>
                 </label>
             </div>
+            {#if resultImage}
+                <div class="block">
+                    <button
+                        class="button is-medium is-primary is-outlined is-fullwidth"
+                        onclick={handleRemoveBlackbar}>Remove Blackbar</button
+                    >
+                </div>
+            {/if}
         </div>
     </div>
 </main>
+
+<style>
+p.title {
+    font-family: Calibri, sans-serif;
+    font-size: 50px;
+}
+</style>
