@@ -13,7 +13,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut buf: Vec<u8> = Vec::new();
     img_rgb.write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Png)?;
 
-    let _result = blackbar_remover::remove_black_bar(buf);
+    let result = blackbar_remover::remove_black_bar(buf);
+
+    let result_image = image::load_from_memory(&result).unwrap();
+    result_image.save("output.png").unwrap();
 
     Ok(())
 }
