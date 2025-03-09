@@ -4,9 +4,11 @@
 
     let removeBlackbar: any;
     let inputImage: any;
+    let selectedImage: any;
     let filename = $state("");
     let resultImage: any = $state("");
     let loading = $state(false);
+    let downloadable = $state(false);
 
     onMount(async () => {
         const module = await import("../pkg/blackbar_remover.js");
@@ -16,27 +18,32 @@
 
     function handleImageUpload() {
         loading = false;
+        downloadable = false;
 
         if (resultImage) {
             URL.revokeObjectURL(resultImage);
         }
 
-        const image = inputImage.files[0];
-        if (image) {
+        if (!inputImage || !inputImage.files || inputImage.files.length === 0)
+            return;
+        selectedImage = inputImage.files[0];
+        if (selectedImage) {
             const reader = new FileReader();
-            reader.readAsDataURL(image);
+            reader.readAsDataURL(selectedImage);
             reader.onload = async (e) => {
                 if (!e.target) return;
                 resultImage = e.target.result;
-                filename = image.name;
+                filename = selectedImage.name;
             };
         }
     }
 
     function handleRemoveBlackbar() {
         loading = true;
-        const image = inputImage.files[0];
-        if (image) {
+        if (inputImage.files[0]) {
+            selectedImage = inputImage.files[0];
+        }
+        if (selectedImage) {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 if (!e.target) {
@@ -48,8 +55,9 @@
                 const blob = new Blob([output], { type: "image/png" });
                 resultImage = URL.createObjectURL(blob);
                 loading = false;
+                downloadable = true;
             };
-            reader.readAsArrayBuffer(image);
+            reader.readAsArrayBuffer(selectedImage);
         } else {
             loading = false;
         }
@@ -71,16 +79,31 @@
             </div>
             {#if resultImage}
                 <div class="box block has-background-grey-darker">
-                    <button
-                        onclick={() => document.getElementById("image-input")?.click()}
+                    <div
+                        role="button"
+                        onclick={() =>
+                            document.getElementById("image-input")?.click()}
+                        onkeypress={() => {}}
+                        tabindex="0"
                     >
                         <img
                             style="max-height: 500px;"
                             src={resultImage}
                             alt="result"
                         /><br />
-                    </button>
+                    </div>
                 </div>
+                {#if downloadable}
+                    <div class="block is-centered">
+                        <a
+                            class="button is-small is-white"
+                            href={resultImage}
+                            download
+                            ><i class="fa fa-download" aria-hidden="true"
+                            ></i>&nbsp;Download</a
+                        >
+                    </div>
+                {/if}
             {/if}
             <div class="file is-centered" class:has-name={filename}>
                 <label class="file-label">
