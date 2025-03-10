@@ -15,20 +15,12 @@ Blackbar Remover is a simple and efficient tool designed to remove black bars fr
 
 1. Run wasm-pack:
    ```bash
-   wasm-pack build --target web
-   ```
-2. Remove any pkg/ inside web/:
-   ```bash
-   rm -rf ./web/pkg/
-   ```
-3. Move built pkg/ to web/:
-   ```bash
-   mv ./pkg/ ./web/
+   wasm-pack build --target web --out-dir ./web/pkg
    ```
 
 ### Running Web Locally
 
-1. Get inside web/:
+1. Get inside web:
    ```bash
    cd web/
    ```

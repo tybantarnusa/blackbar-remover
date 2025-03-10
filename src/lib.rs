@@ -1,20 +1,22 @@
 use std::io::Cursor;
+
 use wasm_bindgen::prelude::*;
 
 const THRESHOLD: u8 = 30;
+const ANCHOR_NUMS: u32 = 5;
 
 #[wasm_bindgen]
-pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
+pub fn remove_black_bar(input: Vec<u8>) -> Result<Vec<u8>, JsError> {
     let img = match image::load_from_memory(&input) {
         Ok(img) => img,
-        Err(_) => return input,
+        Err(_) => return Err(JsError::new("Failed to load image")),
     };
     let mut img_rgb = img.to_rgb8();
 
     let (width, height) = img_rgb.dimensions();
 
-    if width < 4 || height < 4 {
-        return input;
+    if width < ANCHOR_NUMS || height < ANCHOR_NUMS {
+        return Err(JsError::new("Image too small"));
     }
 
     let mut top = height;
@@ -22,9 +24,9 @@ pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
     let mut right = 0;
     let mut bottom = 0;
 
-    for i in 0..4 {
-        let anchor_width = (width/4 * i) + (width/8);
-        let anchor_height = (height/4 * i) + (height/8);
+    for i in 0..ANCHOR_NUMS {
+        let anchor_width = (width / ANCHOR_NUMS * i) + (width / (ANCHOR_NUMS * 2));
+        let anchor_height = (height / ANCHOR_NUMS * i) + (height / (ANCHOR_NUMS * 2));
 
         let mut selected_top;
         for y in 0..height {
@@ -80,17 +82,18 @@ pub fn remove_black_bar(input: Vec<u8>) -> Vec<u8> {
     }
 
     if right <= left || bottom <= top {
-        return input;
+        return Err(JsError::new("Accidentally removed the whole image"));
     }
 
-    let new_img = image::imageops::crop(&mut img_rgb, left, top, right - left, bottom - top).to_image();
+    let new_img =
+        image::imageops::crop(&mut img_rgb, left, top, right - left, bottom - top).to_image();
 
     let mut output: Vec<u8> = Vec::new();
     if let Err(_) = new_img.write_to(&mut Cursor::new(&mut output), image::ImageFormat::Png) {
-        return input;
+        return Err(JsError::new("Failed to save image"));
     };
 
-    output
+    Ok(output)
 }
 
 fn check_pixel_threshold(pixel: &image::Rgb<u8>) -> bool {

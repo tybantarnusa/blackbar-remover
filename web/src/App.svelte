@@ -5,6 +5,7 @@
     let removeBlackbar: any;
     let inputImage: any;
     let selectedImage: any;
+    let errMsg = $state("");
     let filename = $state("");
     let resultImage: any = $state("");
     let loading = $state(false);
@@ -12,13 +13,14 @@
 
     onMount(async () => {
         const module = await import("../pkg/blackbar_remover.js");
-        await module.default({ wasm: "../pkg/blackbar_remover_bg.wasm" });
+        await module.default({ wasm: import.meta.env.WASM_PATH });
         removeBlackbar = module.remove_black_bar;
     });
 
     function handleImageUpload() {
         loading = false;
         downloadable = false;
+        errMsg = "";
 
         if (resultImage) {
             URL.revokeObjectURL(resultImage);
@@ -50,12 +52,19 @@
                     loading = false;
                     return;
                 }
-                const data = new Uint8Array(e.target.result as ArrayBuffer);
-                const output = removeBlackbar(data);
-                const blob = new Blob([output], { type: "image/png" });
-                resultImage = URL.createObjectURL(blob);
+
+                try {
+                    const data = new Uint8Array(e.target.result as ArrayBuffer);
+                    const output = removeBlackbar(data);
+                    const blob = new Blob([output], { type: "image/png" });
+                    resultImage = URL.createObjectURL(blob);
+                    errMsg = "";
+                    downloadable = true;
+                } catch (error: any) {
+                    errMsg = error.message;
+                }
+
                 loading = false;
-                downloadable = true;
             };
             reader.readAsArrayBuffer(selectedImage);
         } else {
@@ -77,6 +86,21 @@
                 <p class="title">Blackbar Remover</p>
                 <p class="subtitle">Remove black bars from images</p>
             </div>
+            {#if errMsg}
+                <div
+                    class="notification is-danger is-light"
+                    style="padding: 15px;"
+                >
+                    <button
+                        aria-label="delete"
+                        class="delete"
+                        onclick={() => {
+                            errMsg = "";
+                        }}
+                    ></button>
+                    <strong>Error:</strong> {errMsg}
+                </div>
+            {/if}
             {#if resultImage}
                 <div class="box block has-background-grey-darker">
                     <div
